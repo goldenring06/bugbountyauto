@@ -1,0 +1,42 @@
+name: Manual Recon
+
+on:
+  workflow_dispatch:  # Manual trigger from GitHub UI
+
+jobs:
+  recon:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Set Up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.22'
+
+      - name: Install Dependencies
+        run: |
+          sudo apt update
+          sudo apt install -y curl poppler-utils
+          go install github.com/tomnomnom/assetfinder@latest
+          go install github.com/projectdiscovery/subfinder/v2/cmd/subfinder@latest
+          go install github.com/projectdiscovery/httpx/cmd/httpx@latest
+          go install github.com/projectdiscovery/katana/cmd/katana@latest
+          go install github.com/lc/gau/v2/cmd/gau@latest
+          go install github.com/projectdiscovery/nuclei/v3/cmd/nuclei@latest
+          go install github.com/LukaSikic/subzy@latest
+
+      - name: Run Recon Tool
+        run: |
+          echo "Running recon..."
+          go run bugbountyauto.go <<< "example.com"
+
+      - name: Notify on Discord
+        if: always()
+        run: |
+          curl -H "Content-Type: application/json" ^
+               -X POST ^
+               -d "{\"content\": \"Recon completed ✅\"}" ^
+               ${{ secrets.DISCORD_WEBHOOK_URL }}
