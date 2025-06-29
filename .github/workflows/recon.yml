@@ -26,7 +26,7 @@ jobs:
           go install github.com/projectdiscovery/katana/cmd/katana@latest
           go install github.com/lc/gau/v2/cmd/gau@latest
           go install github.com/projectdiscovery/nuclei/v3/cmd/nuclei@latest
-          go install github.com/LukaSikic/subzy@latest
+          go install github.com/PentestPad/subzy@latest
 
       - name: Run Recon Tool
         run: |
