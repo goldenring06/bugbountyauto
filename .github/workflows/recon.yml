@@ -1,7 +1,12 @@
 name: Manual Recon
 
 on:
-  workflow_dispatch:  # Manual trigger from GitHub UI
+  workflow_dispatch:
+    inputs:
+      domain:
+        description: "Enter target domain (e.g. example.com)"
+        required: true
+        type: string
 
 jobs:
   recon:
@@ -28,15 +33,15 @@ jobs:
           go install github.com/projectdiscovery/nuclei/v3/cmd/nuclei@latest
           go install github.com/PentestPad/subzy@latest
 
-      - name: Run Recon Tool
-        run: |
-          echo "Running recon..."
-          go run bugbountyauto.go <<< "example.com"
+      - name: Save Domain to File
+        run: echo "${{ github.event.inputs.domain }}" > target.txt
 
-      - name: Notify on Discord
+      - name: Run Recon Tool
+        run: go run bugbountyauto.go
+
+      - name: Send final-result.txt to Discord
         if: always()
         run: |
-          curl -H "Content-Type: application/json" ^
-               -X POST ^
-               -d "{\"content\": \"Recon completed ✅\"}" ^
+          curl -F "payload_json={\"content\":\"Recon completed ✅ for domain: ${{ github.event.inputs.domain }}\"}" \
+               -F "file=@final-result.txt" \
                ${{ secrets.DISCORD_WEBHOOK_URL }}
